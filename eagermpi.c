@@ -7,6 +7,10 @@
  *  Simple program to work out the eager limit experimentally by
  *  seeing at which message size MPI_Send becomes synchronous and the
  *  (incorrectly written) code therefore deadlocks.
+ *
+ *  Ping-pong happens betweens ranks 0 and size-1 (not 0 and 1) as
+ *  this sometimes makes it easier to ensure that the active processes
+ *  are on different nodes.
  */
 
 int main(void)
@@ -16,9 +20,10 @@ int main(void)
 
   int max=16*mega;
 
-  int msg, i;
+  int msg;
   int rank, size, dest;
   char *buffer;
+  char nodename[MPI_MAX_PROCESSOR_NAME];
   MPI_Status status;
 
   buffer = (char *) malloc(max);
@@ -34,8 +39,13 @@ int main(void)
       MPI_Finalize();
       return 1;
     }
+  else if (rank == 0 || rank == size-1)
+    {
+      MPI_Get_processor_name(nodename, &msg);
+      printf("Rank %d running on node <%s>\n", rank, nodename);
+    }
 
-  msg = 1;
+  msg = 4;
   dest = size-rank-1;
         
   while (msg <= max)
