@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Slurm job options (name, compute nodes, job time)
+#SBATCH --nodes=2
+#SBATCH --tasks-per-node=1
+#SBATCH --job-name=imb-nbc-ucx-under
+#SBATCH --time=00:20:00
+#SBATCH --output=%x-%j.out
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=standard
+# The commands below select the short queue for small jobs
+# For long or large jobs, use --qos=standard and omit the reservation
+#SBATCH --qos=short
+# If you have a personal budget, you can use this below (e.g. ta123-username)
+# This is currently commented out so it will use the default project budget
+##SBATCH --account=XXXX
+
+# Set the number of threads to 1
+#   This prevents any threaded system libraries from automatically
+#   using threading.
+
+export OMP_NUM_THREADS=1
+
+# Use "srun" to launch the job
+
+echo "FI_OFI_RXM_BUFFER_SIZE = $FI_OFI_RXM_BUFFER_SIZE"
+echo "FI_OFI_RXM_SAR_LIMIT   = $FI_OFI_RXM_SAR_LIMIT"
+
+srun --unbuffered --distribution=block:block ./eagermpi
